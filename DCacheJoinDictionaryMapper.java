@@ -1,31 +1,28 @@
 package DCacheJoin;
 
-import java.io.*;
-import java.util.StringTokenizer;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text, Text> {
     String fileName = null, language = null;
     public Map<String, String> translations = new HashMap<String, String>();
     Path[] cachedFilePaths = null;
-    File file;
+
 
     public void setup(Context context) throws IOException, InterruptedException {
         // TODO: determine the name of the additional language based on the file name
         cachedFilePaths = DistributedCache.getLocalCacheFiles(context.getConfiguration());
         fileName = cachedFilePaths[0].getName();
         language = fileName.substring(0, fileName.lastIndexOf('.'));
-        file = new File(fileName);
+
         // TODO: OPTIONAL: depends on your implementation -- create a HashMap of translations (word, part of speech, translations) from output of exercise 1
 
 
@@ -39,11 +36,36 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         partOfSpeech = strValue.substring(strValue.indexOf('['), strValue.indexOf(']')) + "]";
         word = strValue.substring(0, strValue.indexOf(':'));
 
-        FileReader fileReader = new FileReader(new File("latin.txt"));
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String line = bufferedReader.readLine();
+        File file = new File(cachedFilePaths[0].toString());
+        FileInputStream fs = null;
 
-        context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(line));
+        try{
+            fs = new FileInputStream(file);
+            int c;
+            while((c = fs.read())!= -1){
+                String tmp = (char)c + "";
+                context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(tmp));
+            }
+        }
+        catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+        finally {
+            try{
+                if(fs!=null)
+                    fs.close();
+            }
+            catch (IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+
+
+//        FileReader fileReader = new FileReader(new File("latin.txt"));
+//        BufferedReader bufferedReader = new BufferedReader(fileReader);
+//        String line = bufferedReader.readLine();
+
+
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
     }
 
