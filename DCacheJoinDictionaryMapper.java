@@ -43,7 +43,7 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         String line = bufferedReader.readLine();
 
-        context.write(new Text("test"), new Text(line));
+        context.write(new Text(fileName+" "+language), new Text(line));
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
     }
 

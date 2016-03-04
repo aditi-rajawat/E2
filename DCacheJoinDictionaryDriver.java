@@ -39,6 +39,7 @@ public class DCacheJoinDictionaryDriver extends Configured implements Tool {
         job.setOutputValueClass(Text.class);
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
+        job.setNumReduceTasks(0);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         return job.waitForCompletion(true) ? 0 : 1;
