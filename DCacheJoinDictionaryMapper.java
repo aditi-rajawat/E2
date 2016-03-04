@@ -39,11 +39,11 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         partOfSpeech = strValue.substring(strValue.indexOf('['), strValue.indexOf(']')) + "]";
         word = strValue.substring(0, strValue.indexOf(':'));
 
-        FileReader fileReader = new FileReader(fileName);
+        FileReader fileReader = new FileReader(cachedFilePaths[0].toString());
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         String line = bufferedReader.readLine();
 
-        context.write(new Text(fileName+" "+language), new Text(line));
+        context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(line));
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
     }
 
