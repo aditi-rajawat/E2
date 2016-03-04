@@ -39,7 +39,7 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         partOfSpeech = strValue.substring(strValue.indexOf('['), strValue.indexOf(']')) + "]";
         word = strValue.substring(0, strValue.indexOf(':'));
 
-        FileReader fileReader = new FileReader(file);
+        FileReader fileReader = new FileReader(fileName);
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         String line = bufferedReader.readLine();
 
