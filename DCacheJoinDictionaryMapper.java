@@ -39,32 +39,33 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         File file = new File(cachedFilePaths[0].toString());
         FileInputStream fs = null;
 
-        try{
-            fs = new FileInputStream(file);
-            int c;
-            while((c = fs.read())!= -1){
-                String tmp = (char)c + "";
-                context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(tmp));
-            }
-        }
-        catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-        finally {
-            try{
-                if(fs!=null)
-                    fs.close();
-            }
-            catch (IOException e){
-                System.out.println(e.getMessage());
-            }
-        }
+//        try{
+//            fs = new FileInputStream(file);
+//            int c;
+//            while((c = fs.read())!= -1){
+//                String tmp = (char)c + "";
+//                context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(tmp));
+//            }
+//        }
+//        catch (IOException e){
+//            System.out.println(e.getMessage());
+//        }
+//        finally {
+//            try{
+//                if(fs!=null)
+//                    fs.close();
+//            }
+//            catch (IOException e){
+//                System.out.println(e.getMessage());
+//            }
+//        }
 
 
-//        FileReader fileReader = new FileReader(new File("latin.txt"));
-//        BufferedReader bufferedReader = new BufferedReader(fileReader);
-//        String line = bufferedReader.readLine();
-
+        FileReader fileReader = new FileReader(new File("latin.txt"));
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        String line = bufferedReader.readLine();
+        line = bufferedReader.readLine();
+        context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(line));
 
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
     }
