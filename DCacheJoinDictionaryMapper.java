@@ -30,59 +30,56 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
 
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         // TODO: perform a map-side join between the word/part-of-speech from exercise 1 and the word/part-of-speech from the distributed cache file
-        String partOfSpeech = null, word = null;
+        String partOfSpeech = null, word = null, translations = null;
         String strValue = value.toString();
+        String localKey=null, localValue=null;
 
         partOfSpeech = strValue.substring(strValue.indexOf('['), strValue.indexOf(']')) + "]";
         word = strValue.substring(0, strValue.indexOf(':'));
 
-        File file = new File(cachedFilePaths[0].toString());
-        FileInputStream fs = null;
-
-//        try{
-//            fs = new FileInputStream(file);
-//            int c;
-//            while((c = fs.read())!= -1){
-//                String tmp = (char)c + "";
-//                context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(tmp));
-//            }
-//        }
-//        catch (IOException e){
-//            System.out.println(e.getMessage());
-//        }
-//        finally {
-//            try{
-//                if(fs!=null)
-//                    fs.close();
-//            }
-//            catch (IOException e){
-//                System.out.println(e.getMessage());
-//            }
-//        }
-
-
-        FileReader fileReader = new FileReader(new File("latin.txt"));
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String line = bufferedReader.readLine();
-        line = bufferedReader.readLine();
-        context.write(new Text(fileName+" "+language+ ""+cachedFilePaths[0].toString()), new Text(line));
+        translations = searchFile(partOfSpeech, word);
 
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
+        localKey = word + ": " + partOfSpeech;
+        if(translations!=null)
+            localValue = (strValue.split("\\t"))[1] + "|" + translations;
+        else
+            localValue = (strValue.split("\\t"))[1];
+        context.write(new Text(localKey), new Text(localValue));
     }
 
-   // private String searchFile() {
-//        String line = null;
-//
-//        try {
-//            if ((cachedFilePaths != null) && (file != null)) {
-//                FileReader fileReader = new FileReader(file);
-//
-//            }
-//
-//        } catch (FileNotFoundException ex) {
-//            System.out.println(ex.getMessage());
-//        }
-//
-//
-//    }
+    private String searchFile(String partOfSpeech, String word) {
+        String line = null, translations = language+":N/A";
+
+        try {
+            if(fileName != null) {
+                FileReader fileReader = new FileReader(fileName);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                while((line = bufferedReader.readLine())!=null){
+                    if ((line.contains(word)) && (line.contains(partOfSpeech))){
+                        String[] tokens = line.split("\\t");
+                        String tmpValue = tokens[1];
+                        if(tmpValue!=null){
+                            if(tmpValue.lastIndexOf(']') == tmpValue.length()-1){
+                                if(tmpValue.lastIndexOf('[')< tmpValue.lastIndexOf(']')){
+                                    translations = tmpValue.substring(0, tmpValue.lastIndexOf('['));
+                                    translations = translations.replace(';',',');
+                                    translations = language+ ":" + translations;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                bufferedReader.close();
+                return translations;
+            }
+
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex.getMessage());
+        } catch (IOException ex){
+            System.out.println(ex.getMessage());
+        }
+        return null;
+    }
 }
