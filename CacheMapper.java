@@ -1,4 +1,4 @@
-package DCacheJoin;
+package Dictionary;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class CacheMapper extends Mapper<LongWritable, Text, Text, Text> {
     String fileName = null, language = null;
     public Map<String, String> translations = new HashMap<String, String>();
     Path[] cachedFilePaths = null;
@@ -40,7 +40,7 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
         translations = searchFile(partOfSpeech, word);
 
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
-        localKey = word + ": " + partOfSpeech;
+        localKey = word + ": " + partOfSpeech + " ";
         if(translations!=null)
             localValue = (strValue.split("\\t"))[1] + "|" + translations;
         else
@@ -62,10 +62,14 @@ public class DCacheJoinDictionaryMapper extends Mapper<LongWritable, Text, Text,
                         if(tmpValue!=null){
                             if(tmpValue.lastIndexOf(']') == tmpValue.length()-1){
                                 if(tmpValue.lastIndexOf('[')< tmpValue.lastIndexOf(']')){
-                                    translations = tmpValue.substring(0, tmpValue.lastIndexOf('['));
-                                    translations = translations.replace(';',',');
-                                    translations = language+ ":" + translations;
-                                    break;
+                                    String tempTranslations = tmpValue.substring(0, tmpValue.lastIndexOf('['));
+                                    tempTranslations = tempTranslations.replace(';',',');
+                                    if(translations.contains("N/A")){
+                                        translations = language+ ":" + tempTranslations;
+                                    }
+                                    else{
+                                        translations = translations + "," + tempTranslations;
+                                    }
                                 }
                             }
                         }
