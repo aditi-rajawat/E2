@@ -32,7 +32,7 @@ public class CacheMapper extends Mapper<LongWritable, Text, Text, Text> {
         // TODO: perform a map-side join between the word/part-of-speech from exercise 1 and the word/part-of-speech from the distributed cache file
         String partOfSpeech = null, word = null, translations = null;
         String strValue = value.toString();
-        String localKey=null, localValue=null;
+        String localKey = null, localValue = null;
 
         partOfSpeech = strValue.substring(strValue.indexOf('['), strValue.indexOf(']')) + "]";
         word = strValue.substring(0, strValue.indexOf(':'));
@@ -41,7 +41,7 @@ public class CacheMapper extends Mapper<LongWritable, Text, Text, Text> {
 
         // TODO: where there is a match from above, add language:translation to the list of translations in the existing record (if no match, add language:N/A
         localKey = word + ": " + partOfSpeech + " ";
-        if(translations!=null)
+        if (translations != null)
             localValue = (strValue.split("\\t"))[1] + "|" + translations;
         else
             localValue = (strValue.split("\\t"))[1];
@@ -49,26 +49,28 @@ public class CacheMapper extends Mapper<LongWritable, Text, Text, Text> {
     }
 
     private String searchFile(String partOfSpeech, String word) {
-        String line = null, translations = language+":N/A";
+        String line = null, translations = language + ":N/A";
 
         try {
-            if(fileName != null) {
+            if (fileName != null) {
                 FileReader fileReader = new FileReader(fileName);
                 BufferedReader bufferedReader = new BufferedReader(fileReader);
-                while((line = bufferedReader.readLine())!=null){
-                    if ((line.contains(word)) && (line.contains(partOfSpeech))){
+                while ((line = bufferedReader.readLine()) != null) {
+                    if ((line.contains(word)) && (line.contains(partOfSpeech))) {
                         String[] tokens = line.split("\\t");
+                        String tmpWord = tokens[0];
                         String tmpValue = tokens[1];
-                        if(tmpValue!=null){
-                            if(tmpValue.lastIndexOf(']') == tmpValue.length()-1){
-                                if(tmpValue.lastIndexOf('[')< tmpValue.lastIndexOf(']')){
-                                    String tempTranslations = tmpValue.substring(0, tmpValue.lastIndexOf('['));
-                                    tempTranslations = tempTranslations.replace(';',',');
-                                    if(translations.contains("N/A")){
-                                        translations = language+ ":" + tempTranslations;
-                                    }
-                                    else{
-                                        translations = translations + "," + tempTranslations;
+                        if (tmpWord.equalsIgnoreCase(word)) {
+                            if (tmpValue != null) {
+                                if (tmpValue.lastIndexOf(']') == tmpValue.length() - 1) {
+                                    if (tmpValue.lastIndexOf('[') < tmpValue.lastIndexOf(']')) {
+                                        String tempTranslations = tmpValue.substring(0, tmpValue.lastIndexOf('['));
+                                        tempTranslations = tempTranslations.replace(';', ',');
+                                        if (translations.contains("N/A")) {
+                                            translations = language + ":" + tempTranslations;
+                                        } else {
+                                            translations = translations + "," + tempTranslations;
+                                        }
                                     }
                                 }
                             }
@@ -81,7 +83,7 @@ public class CacheMapper extends Mapper<LongWritable, Text, Text, Text> {
 
         } catch (FileNotFoundException ex) {
             System.out.println(ex.getMessage());
-        } catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
         return null;
